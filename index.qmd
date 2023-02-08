@@ -1,0 +1,13 @@
+---
+title: "ISSS608-VAA"
+---
+
+Welcome to "[ISSS608-Visual Analytics and Applications](https://elearn.smu.edu.sg/d2l/home/340455 "ISSS608-Visual Analytics and Applications-G1")"
+
+This is a Quarto website.
+
+To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+
+```{r}
+1 + 1
+```
