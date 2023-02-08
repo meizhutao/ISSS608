@@ -13,9 +13,9 @@ website:
             text: Take-home Exercise 2
       - text: In-class Exercise
         menu: 
-          - href: In-class Ex3/In-class Ex3.qmd
+          - href: In-class Exercise/In-class Ex3/In-class Ex3.qmd
             text: In-class Ex3
-          - href: In-class Ex4/In-class Ex4.qmd
+          - href: In-class Exercise/In-class Ex4/In-class Ex4.qmd
             text: In-class Ex4
     right: 
        - href: index.qmd

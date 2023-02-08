@@ -1,0 +1,166 @@
+---
+title: "Take-home Exercise 1"
+editor: visual
+---
+
+# 1. The Task
+
+\[Age-sex pyramid\]is an analytical visualisation commonly used by demographers to reveal the structure of population by gender and age group. In this take-home exercise, we will reveal the demographic structure of Singapore at planning area level by using age-sex pyramid method. we are required to display nine selected planning areas on a single view by using \[trellis display (also know as small-multiple plot)\].
+
+# 2. The Designing Tool
+
+For the purpose of this take-home exercise, Tableau desktop will be used to design the analytical visualization.
+
+# 3. The Data
+
+*Singapore Residents by Planning Area / Subzone, Age Group, Sex and Type of Dwelling, June 2022* should be used to prepare the analytical visualisation. It is available at [Department of Statistics, Singapore](https://www.singstat.gov.sg/)(in short SingStat).
+
+# 4. Download Data
+
+First of all, download two data sets from the website.
+
+![](images/data%20source-01.png)
+
+We get for respopagesextod2022e.xlsx *Singapore Residents by Planning Area / Subzone, Age Group, Sex and Type of Dwelling, June 2022*.xlsx(377KB), and respopagesextod2022.zip for *Singapore Residents by Planning Area / Subzone, Age Group, Sex and Type of Dwelling, June 2022*.csv(5MB).
+
+Secondly, unzip the respopagesextod2022.zip, we will get Notes_respopagesextod2022.csv and respopagesextod2022.csv.![](images/data-01.JPG) In my study, I will use the respopagesextod2022.csv. Because "Males" and "Females" have already been stacked in one column whereas respopagesextod2022e has not.
+
+# 5. Step by step description
+
+## 1. Load the respopagesextod2022.csv into Tableau Prep Builders. Click the check box of 'Use Data Interpreter'.
+
+![](images/Picture1.png)
+
+## 2. Scan through the data details and change the "Time" from data type "number" to "date".
+
+![](images/3.JPG)
+
+## 3. Create rows and columns for 3\*3 pyramid.
+
+## ![](images/7.png)
+
+![](images/paste-D91B636B.png)
+
+![](images/paste-D1373D40.png)
+
+## 4. Go to the sheet1, click the "Sex", add on calculation field for Male Population and Female Population.
+
+![](images/4-01.png)
+
+![](images/6.JPG)
+
+![](images/5-01.JPG)
+
+## 5. Group "ages" shown in the following.
+
+![](images/paste-CCFE8BCF.png)
+
+![](images/paste-5F743132.png)
+
+## 6. Drag the data fields into the columns and rows as following.
+
+![](images/paste-74B3998B.png)
+
+## 7. Change
+
+![![](images/paste-CB1B4763.png)](images/paste-15BA21EB.png)
+
+## 8. Filter the PA, select the top 9 planning areas which have most the population.
+
+![](images/paste-0773D8C3.png)
+
+![](images/paste-C57ECA7B.png)
+
+## 9. Put the PA into the details under Marks/All.
+
+![](images/paste-5FA8FCF4.png)
+
+## 10. Change the chart to a pyramid view by editing the axis for the *Female Population* field. Right click on the axis for *Female Population* field and select "Edit Axis".
+
+![](images/paste-DFD4B65C.png) \## In the popped up window, under the section "Scale", tick the check-box for "Reversed" to reverse the axis for the *Female Population* field.
+
+![](images/paste-C9352EC3.png)
+
+## 10. Change the Female bar color from blue to red.
+
+![](images/paste-9031D6DE.png)
+
+## 11. Sort descending for the age group.
+
+![](images/paste-D5050C29.png)
+
+## 12. Remove index of rows by click the "show header" to make the chart bigger for viewing.
+
+![](images/paste-5C8FB6EB.png){width="200"}
+
+![](images/paste-7DE7F1BF.png){width="206"}
+
+## 13. Proper labeling.
+
+## Drag the PA into the label under Marks/All.
+
+![](images/paste-2B44C90B.png)
+
+## Select the following settings for SUM(Female Population).
+
+![](images/paste-BA12A11D.png)
+
+## Drag the Female Population to the label under Female Population, drag the Male Population to the label under Male Population.
+
+![](images/paste-54367D47.png){width="240"}
+
+![](images/paste-248C86E1.png){width="240"}
+
+## Click the label under the Female Population and select the following setting, do the same thing for Male Population.
+
+![](images/paste-19636A50.png)
+
+![](images/paste-7E9BC15D.png)
+
+## 14. Format the numbers of SUM(Female Population) from automatic to Number(custom)--Thousands(K), decimal is "0".
+
+![](images/paste-FF0FA61A.png)
+
+![](images/paste-256C8755.png)
+
+## Do the same thing for Male population.
+
+## 15. Change the name of sheet1 to "Demographic structure of Singapore at top 9 population planning area in June 2022".
+
+![](images/paste-8F60B71F.png)
+
+## 16. Create dashboard. Click the New Dashboard.
+
+![](images/paste-3F15C6C9.png)
+
+## drag the sheet into the right "drop sheets here".
+
+![](images/paste-739F4E55.png)
+
+## Change the dashboard name to "Demographic structure of Singapore at top 9 population planning area in June 2022".
+
+## 17. Save the file to Take-home Exercise 1.
+
+![](images/paste-935EE01D.png)
+
+![](images/paste-440D26B2.png)
+
+## 18. Extract data.
+
+![](images/paste-B9181564.png)
+
+## 19. Publish the dashboard to https://public.tableau.com/app/
+
+![](images/paste-210AC3FE.png)
+
+# 6. Data analysis
+
+## In general, among the resident population, Female Population is slightly larger than the Male Population in the top 9 population planning areas.
+
+## Overall, the age groups of 20 to 29, 30 to 39, 40 to 49, 50 to 59, 60 to 69 contributes the main distribution of population of females and males in those planning areas except Punggol and Sengkang.
+
+## In the 9 planning areas, in Punggol and Sengkang planning areas, residents aged 30 to 39, 40 to 49 has significant larger population compared to other age groups.
+
+## In woodlands and Choa Chu Kang planning area, age groups of 20 to 29 and 50 to 59 have obviously larger population compared to other age groups.
+
+## In Bedok, Tampines, Yishun, from the pyramid shape, we can notice that population aged groups are larger than younger generation .

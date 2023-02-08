@@ -7,10 +7,346 @@
     "text": "About this site\n\n1 + 1\n\n[1] 2"
   },
   {
+    "objectID": "In-class Exercise/In-class Ex3/In-class Ex3.html",
+    "href": "In-class Exercise/In-class Ex3/In-class Ex3.html",
+    "title": "In-class Ex3",
+    "section": "",
+    "text": "Installing and loading R packages\nTwo packages will be installed and loaded. They are tidyverse and ggiraph.\n\npacman::p_load(ggiraph, tidyverse)\n\nImporting data\n\nexam_data <- read_csv(\"data/Exam_data.csv\")\n\n\np <- ggplot(data=exam_data, \n       aes(x = MATHS)) +\n  geom_dotplot_interactive(\n    aes(tooltip = ID),\n    stackgroups = TRUE, \n    binwidth = 1, \n    method = \"histodot\") +\n  scale_y_continuous(NULL, \n                     breaks = NULL)\ngirafe(\n  ggobj = p,\n  width_svg = 6,\n  height_svg = 6*0.618\n)"
+  },
+  {
+    "objectID": "In-class Exercise/In-class Ex4/In-class Ex4.html",
+    "href": "In-class Exercise/In-class Ex4/In-class Ex4.html",
+    "title": "In-Class Ex 4",
+    "section": "",
+    "text": "pacman::p_load(plotly,DT,ggstatsplot, ggplot2, patchwork,readxl, performance, parameters, see, tidyverse)\n\n\nexam_data <- read_csv(\"data/Exam_data.csv\")\n\n\nplot_ly (data = exam_data,\n              x= ~ENGLISH,\n              y= ~MATHS,\n              color = ~RACE)\n\n\n\n\n\n\nggplot(data= exam_data,\n           aes(x= MATHS,\n               y= ENGLISH))+\n  geom_point(dotsize= 1)+\n  coord_cartesian(xlim = c(0,100),\n                  ylim = c(0,100))\n\n\n\n\n\nggscatterstats(\n  data = exam_data,\n  x = MATHS,\n  y = ENGLISH,\n  marginal = FALSE,\n  )\n\n\n\n\n\nmy_sum <- exam_data %>%\n  group_by(RACE) %>%\n  summarise(\n    n=n(),\n    mean=mean(MATHS),\n    sd=sd(MATHS)\n    ) %>%\n  mutate(se=sd/sqrt(n-1))\n\n\nknitr::kable(head(my_sum), format = 'html')\n\n\n\n \n  \n    RACE \n    n \n    mean \n    sd \n    se \n  \n \n\n  \n    Chinese \n    193 \n    76.50777 \n    15.69040 \n    1.132357 \n  \n  \n    Indian \n    12 \n    60.66667 \n    23.35237 \n    7.041005 \n  \n  \n    Malay \n    108 \n    57.44444 \n    21.13478 \n    2.043177 \n  \n  \n    Others \n    9 \n    69.66667 \n    10.72381 \n    3.791438 \n  \n\n\n\n\n\n\nggplot(my_sum) +\n  geom_errorbar(\n    aes(x=RACE, \n        ymin=mean-se, \n        ymax=mean+se), \n    width=0.2, \n    colour=\"black\", \n    alpha=0.9, \n    size=0.5) +\n  geom_point(aes\n           (x=RACE, \n            y=mean), \n           stat=\"identity\", \n           color=\"red\",\n           size = 1.5,\n           alpha=1) +\n  ggtitle(\"Standard error of mean \n          maths score by rac\")\n\n\n\n\n\ncar_resale <- read_xls(\"data/ToyotaCorolla.xls\", \n                       \"data\")\ncar_resale\n\n# A tibble: 1,436 × 38\n      Id Model       Price Age_0…¹ Mfg_M…² Mfg_Y…³     KM Quart…⁴ Weight Guara…⁵\n   <dbl> <chr>       <dbl>   <dbl>   <dbl>   <dbl>  <dbl>   <dbl>  <dbl>   <dbl>\n 1    81 TOYOTA Cor… 18950      25       8    2002  20019     100   1180       3\n 2     1 TOYOTA Cor… 13500      23      10    2002  46986     210   1165       3\n 3     2 TOYOTA Cor… 13750      23      10    2002  72937     210   1165       3\n 4     3  TOYOTA Co… 13950      24       9    2002  41711     210   1165       3\n 5     4 TOYOTA Cor… 14950      26       7    2002  48000     210   1165       3\n 6     5 TOYOTA Cor… 13750      30       3    2002  38500     210   1170       3\n 7     6 TOYOTA Cor… 12950      32       1    2002  61000     210   1170       3\n 8     7  TOYOTA Co… 16900      27       6    2002  94612     210   1245       3\n 9     8 TOYOTA Cor… 18600      30       3    2002  75889     210   1245       3\n10    44 TOYOTA Cor… 16950      27       6    2002 110404     234   1255       3\n# … with 1,426 more rows, 28 more variables: HP_Bin <chr>, CC_bin <chr>,\n#   Doors <dbl>, Gears <dbl>, Cylinders <dbl>, Fuel_Type <chr>, Color <chr>,\n#   Met_Color <dbl>, Automatic <dbl>, Mfr_Guarantee <dbl>,\n#   BOVAG_Guarantee <dbl>, ABS <dbl>, Airbag_1 <dbl>, Airbag_2 <dbl>,\n#   Airco <dbl>, Automatic_airco <dbl>, Boardcomputer <dbl>, CD_Player <dbl>,\n#   Central_Lock <dbl>, Powered_Windows <dbl>, Power_Steering <dbl>,\n#   Radio <dbl>, Mistlamps <dbl>, Sport_Model <dbl>, Backseat_Divider <dbl>, …\n\n\n\nmodel <- lm(Price ~ Age_08_04 + Mfg_Year + KM + \n              Weight + Guarantee_Period, data = car_resale)\nmodel\n\n\nCall:\nlm(formula = Price ~ Age_08_04 + Mfg_Year + KM + Weight + Guarantee_Period, \n    data = car_resale)\n\nCoefficients:\n     (Intercept)         Age_08_04          Mfg_Year                KM  \n      -2.637e+06        -1.409e+01         1.315e+03        -2.323e-02  \n          Weight  Guarantee_Period  \n       1.903e+01         2.770e+01  \n\n\n\ncheck_c <- check_collinearity(model)\nplot(check_c)\n\n\n\n\n\nmodel1 <- lm(Price ~ Age_08_04 + KM + \n              Weight + Guarantee_Period, data = car_resale)\n\n\ncheck_n <- check_normality(model1)\nplot(check_n)"
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "ISSS608",
+    "title": "ISSS608-VAA",
     "section": "",
-    "text": "This is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n1 + 1\n\n[1] 2"
+    "text": "Welcome to “ISSS608-Visual Analytics and Applications”\nThis is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html",
+    "title": "Take-home Exercise 1",
+    "section": "",
+    "text": "[Age-sex pyramid]is an analytical visualisation commonly used by demographers to reveal the structure of population by gender and age group. In this take-home exercise, we will reveal the demographic structure of Singapore at planning area level by using age-sex pyramid method. we are required to display nine selected planning areas on a single view by using [trellis display (also know as small-multiple plot)]."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#load-the-respopagesextod2022.csv-into-tableau-prep-builders.-click-the-check-box-of-use-data-interpreter.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#load-the-respopagesextod2022.csv-into-tableau-prep-builders.-click-the-check-box-of-use-data-interpreter.",
+    "title": "Take-home Exercise 1",
+    "section": "1. Load the respopagesextod2022.csv into Tableau Prep Builders. Click the check box of ‘Use Data Interpreter’.",
+    "text": "1. Load the respopagesextod2022.csv into Tableau Prep Builders. Click the check box of ‘Use Data Interpreter’."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#scan-through-the-data-details-and-change-the-time-from-data-type-number-to-date.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#scan-through-the-data-details-and-change-the-time-from-data-type-number-to-date.",
+    "title": "Take-home Exercise 1",
+    "section": "2. Scan through the data details and change the “Time” from data type “number” to “date”.",
+    "text": "2. Scan through the data details and change the “Time” from data type “number” to “date”."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#create-rows-and-columns-for-33-pyramid.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#create-rows-and-columns-for-33-pyramid.",
+    "title": "Take-home Exercise 1",
+    "section": "3. Create rows and columns for 3*3 pyramid.",
+    "text": "3. Create rows and columns for 3*3 pyramid."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#go-to-the-sheet1-click-the-sex-add-on-calculation-field-for-male-population-and-female-population.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#go-to-the-sheet1-click-the-sex-add-on-calculation-field-for-male-population-and-female-population.",
+    "title": "Take-home Exercise 1",
+    "section": "4. Go to the sheet1, click the “Sex”, add on calculation field for Male Population and Female Population.",
+    "text": "4. Go to the sheet1, click the “Sex”, add on calculation field for Male Population and Female Population."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#group-ages-shown-in-the-following.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#group-ages-shown-in-the-following.",
+    "title": "Take-home Exercise 1",
+    "section": "5. Group “ages” shown in the following.",
+    "text": "5. Group “ages” shown in the following."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#drag-the-data-fields-into-the-columns-and-rows-as-following.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#drag-the-data-fields-into-the-columns-and-rows-as-following.",
+    "title": "Take-home Exercise 1",
+    "section": "6. Drag the data fields into the columns and rows as following.",
+    "text": "6. Drag the data fields into the columns and rows as following."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#change",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#change",
+    "title": "Take-home Exercise 1",
+    "section": "7. Change",
+    "text": "7. Change"
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#filter-the-pa-select-the-top-9-planning-areas-which-have-most-the-population.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#filter-the-pa-select-the-top-9-planning-areas-which-have-most-the-population.",
+    "title": "Take-home Exercise 1",
+    "section": "8. Filter the PA, select the top 9 planning areas which have most the population.",
+    "text": "8. Filter the PA, select the top 9 planning areas which have most the population."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#put-the-pa-into-the-details-under-marksall.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#put-the-pa-into-the-details-under-marksall.",
+    "title": "Take-home Exercise 1",
+    "section": "9. Put the PA into the details under Marks/All.",
+    "text": "9. Put the PA into the details under Marks/All."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#change-the-chart-to-a-pyramid-view-by-editing-the-axis-for-the-female-population-field.-right-click-on-the-axis-for-female-population-field-and-select-edit-axis.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#change-the-chart-to-a-pyramid-view-by-editing-the-axis-for-the-female-population-field.-right-click-on-the-axis-for-female-population-field-and-select-edit-axis.",
+    "title": "Take-home Exercise 1",
+    "section": "10. Change the chart to a pyramid view by editing the axis for the Female Population field. Right click on the axis for Female Population field and select “Edit Axis”.",
+    "text": "10. Change the chart to a pyramid view by editing the axis for the Female Population field. Right click on the axis for Female Population field and select “Edit Axis”.\n ## In the popped up window, under the section “Scale”, tick the check-box for “Reversed” to reverse the axis for the Female Population field."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#change-the-female-bar-color-from-blue-to-red.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#change-the-female-bar-color-from-blue-to-red.",
+    "title": "Take-home Exercise 1",
+    "section": "10. Change the Female bar color from blue to red.",
+    "text": "10. Change the Female bar color from blue to red."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#sort-descending-for-the-age-group.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#sort-descending-for-the-age-group.",
+    "title": "Take-home Exercise 1",
+    "section": "11. Sort descending for the age group.",
+    "text": "11. Sort descending for the age group."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#remove-index-of-rows-by-click-the-show-header-to-make-the-chart-bigger-for-viewing.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#remove-index-of-rows-by-click-the-show-header-to-make-the-chart-bigger-for-viewing.",
+    "title": "Take-home Exercise 1",
+    "section": "12. Remove index of rows by click the “show header” to make the chart bigger for viewing.",
+    "text": "12. Remove index of rows by click the “show header” to make the chart bigger for viewing."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#proper-labeling.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#proper-labeling.",
+    "title": "Take-home Exercise 1",
+    "section": "13. Proper labeling.",
+    "text": "13. Proper labeling."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#drag-the-pa-into-the-label-under-marksall.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#drag-the-pa-into-the-label-under-marksall.",
+    "title": "Take-home Exercise 1",
+    "section": "Drag the PA into the label under Marks/All.",
+    "text": "Drag the PA into the label under Marks/All."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#select-the-following-settings-for-sumfemale-population.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#select-the-following-settings-for-sumfemale-population.",
+    "title": "Take-home Exercise 1",
+    "section": "Select the following settings for SUM(Female Population).",
+    "text": "Select the following settings for SUM(Female Population)."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#drag-the-female-population-to-the-label-under-female-population-drag-the-male-population-to-the-label-under-male-population.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#drag-the-female-population-to-the-label-under-female-population-drag-the-male-population-to-the-label-under-male-population.",
+    "title": "Take-home Exercise 1",
+    "section": "Drag the Female Population to the label under Female Population, drag the Male Population to the label under Male Population.",
+    "text": "Drag the Female Population to the label under Female Population, drag the Male Population to the label under Male Population."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#click-the-label-under-the-female-population-and-select-the-following-setting-do-the-same-thing-for-male-population.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#click-the-label-under-the-female-population-and-select-the-following-setting-do-the-same-thing-for-male-population.",
+    "title": "Take-home Exercise 1",
+    "section": "Click the label under the Female Population and select the following setting, do the same thing for Male Population.",
+    "text": "Click the label under the Female Population and select the following setting, do the same thing for Male Population."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#format-the-numbers-of-sumfemale-population-from-automatic-to-numbercustomthousandsk-decimal-is-0.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#format-the-numbers-of-sumfemale-population-from-automatic-to-numbercustomthousandsk-decimal-is-0.",
+    "title": "Take-home Exercise 1",
+    "section": "14. Format the numbers of SUM(Female Population) from automatic to Number(custom)–Thousands(K), decimal is “0”.",
+    "text": "14. Format the numbers of SUM(Female Population) from automatic to Number(custom)–Thousands(K), decimal is “0”."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#do-the-same-thing-for-male-population.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#do-the-same-thing-for-male-population.",
+    "title": "Take-home Exercise 1",
+    "section": "Do the same thing for Male population.",
+    "text": "Do the same thing for Male population."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#change-the-name-of-sheet1-to-demographic-structure-of-singapore-at-top-9-population-planning-area-in-june-2022.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#change-the-name-of-sheet1-to-demographic-structure-of-singapore-at-top-9-population-planning-area-in-june-2022.",
+    "title": "Take-home Exercise 1",
+    "section": "15. Change the name of sheet1 to “Demographic structure of Singapore at top 9 population planning area in June 2022”.",
+    "text": "15. Change the name of sheet1 to “Demographic structure of Singapore at top 9 population planning area in June 2022”."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#create-dashboard.-click-the-new-dashboard.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#create-dashboard.-click-the-new-dashboard.",
+    "title": "Take-home Exercise 1",
+    "section": "16. Create dashboard. Click the New Dashboard.",
+    "text": "16. Create dashboard. Click the New Dashboard."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#drag-the-sheet-into-the-right-drop-sheets-here.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#drag-the-sheet-into-the-right-drop-sheets-here.",
+    "title": "Take-home Exercise 1",
+    "section": "drag the sheet into the right “drop sheets here”.",
+    "text": "drag the sheet into the right “drop sheets here”."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#change-the-dashboard-name-to-demographic-structure-of-singapore-at-top-9-population-planning-area-in-june-2022.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#change-the-dashboard-name-to-demographic-structure-of-singapore-at-top-9-population-planning-area-in-june-2022.",
+    "title": "Take-home Exercise 1",
+    "section": "Change the dashboard name to “Demographic structure of Singapore at top 9 population planning area in June 2022”.",
+    "text": "Change the dashboard name to “Demographic structure of Singapore at top 9 population planning area in June 2022”."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#save-the-file-to-take-home-exercise-1.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#save-the-file-to-take-home-exercise-1.",
+    "title": "Take-home Exercise 1",
+    "section": "17. Save the file to Take-home Exercise 1.",
+    "text": "17. Save the file to Take-home Exercise 1."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#extract-data.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#extract-data.",
+    "title": "Take-home Exercise 1",
+    "section": "18. Extract data.",
+    "text": "18. Extract data."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#publish-the-dashboard-to-httpspublic.tableau.comapp",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#publish-the-dashboard-to-httpspublic.tableau.comapp",
+    "title": "Take-home Exercise 1",
+    "section": "19. Publish the dashboard to https://public.tableau.com/app/",
+    "text": "19. Publish the dashboard to https://public.tableau.com/app/"
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#in-general-among-the-resident-population-female-population-is-slightly-larger-than-the-male-population-in-the-top-9-population-planning-areas.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#in-general-among-the-resident-population-female-population-is-slightly-larger-than-the-male-population-in-the-top-9-population-planning-areas.",
+    "title": "Take-home Exercise 1",
+    "section": "In general, among the resident population, Female Population is slightly larger than the Male Population in the top 9 population planning areas.",
+    "text": "In general, among the resident population, Female Population is slightly larger than the Male Population in the top 9 population planning areas."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#overall-the-age-groups-of-20-to-29-30-to-39-40-to-49-50-to-59-60-to-69-contributes-the-main-distribution-of-population-of-females-and-males-in-those-planning-areas-except-punggol-and-sengkang.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#overall-the-age-groups-of-20-to-29-30-to-39-40-to-49-50-to-59-60-to-69-contributes-the-main-distribution-of-population-of-females-and-males-in-those-planning-areas-except-punggol-and-sengkang.",
+    "title": "Take-home Exercise 1",
+    "section": "Overall, the age groups of 20 to 29, 30 to 39, 40 to 49, 50 to 59, 60 to 69 contributes the main distribution of population of females and males in those planning areas except Punggol and Sengkang.",
+    "text": "Overall, the age groups of 20 to 29, 30 to 39, 40 to 49, 50 to 59, 60 to 69 contributes the main distribution of population of females and males in those planning areas except Punggol and Sengkang."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#in-the-9-planning-areas-in-punggol-and-sengkang-planning-areas-residents-aged-30-to-39-40-to-49-has-significant-larger-population-compared-to-other-age-groups.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#in-the-9-planning-areas-in-punggol-and-sengkang-planning-areas-residents-aged-30-to-39-40-to-49-has-significant-larger-population-compared-to-other-age-groups.",
+    "title": "Take-home Exercise 1",
+    "section": "In the 9 planning areas, in Punggol and Sengkang planning areas, residents aged 30 to 39, 40 to 49 has significant larger population compared to other age groups.",
+    "text": "In the 9 planning areas, in Punggol and Sengkang planning areas, residents aged 30 to 39, 40 to 49 has significant larger population compared to other age groups."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#in-woodlands-and-choa-chu-kang-planning-area-age-groups-of-20-to-29-and-50-to-59-have-obviously-larger-population-compared-to-other-age-groups.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#in-woodlands-and-choa-chu-kang-planning-area-age-groups-of-20-to-29-and-50-to-59-have-obviously-larger-population-compared-to-other-age-groups.",
+    "title": "Take-home Exercise 1",
+    "section": "In woodlands and Choa Chu Kang planning area, age groups of 20 to 29 and 50 to 59 have obviously larger population compared to other age groups.",
+    "text": "In woodlands and Choa Chu Kang planning area, age groups of 20 to 29 and 50 to 59 have obviously larger population compared to other age groups."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#in-bedok-tampines-yishun-from-the-pyramid-shape-we-can-notice-that-population-aged-groups-are-larger-than-younger-generation-.",
+    "href": "Take-home Exercise/Take-home Exercise 1/Take-home Exercise 1.html#in-bedok-tampines-yishun-from-the-pyramid-shape-we-can-notice-that-population-aged-groups-are-larger-than-younger-generation-.",
+    "title": "Take-home Exercise 1",
+    "section": "In Bedok, Tampines, Yishun, from the pyramid shape, we can notice that population aged groups are larger than younger generation .",
+    "text": "In Bedok, Tampines, Yishun, from the pyramid shape, we can notice that population aged groups are larger than younger generation ."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html",
+    "href": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html",
+    "title": "Take-home Exercise 2",
+    "section": "",
+    "text": "The task Take-home Exercise 2 is to select one of the Take-home Exercise 1 prepared by our classmate, critic the submission in terms of clarity and aesthetics,prepare a sketch for the alternative design by using the data visualisation design principles and best practices we had learned in Lesson 1 and 2, and remake the original design by using ggplot2, ggplot2 extensions and tidyverse packages."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#original-design",
+    "href": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#original-design",
+    "title": "Take-home Exercise 2",
+    "section": "4.1 Original design",
+    "text": "4.1 Original design\nThe following is the age-sex pyramid provided by my classmate in this take-home exercise 1 and it will be reviewed and remade in terms of clarity and aesthetics."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#clarity",
+    "href": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#clarity",
+    "title": "Take-home Exercise 2",
+    "section": "4.2 Clarity",
+    "text": "4.2 Clarity\n\n4.2.1 Graphical Integrity: Show Me the Truth\nThe better way for define the age group segmentation should be 0-4, 5-9, etc, and not “children”,“early working age”, etc. The reason is “children”,“early working age”, etc is too general, it will mask out age segmentatio signal.\n\n\n4.2.2 Visualising the Right Data\nAbsolute values will reveal more interesting patterns than the derived values. From the derived values which is population in percentage, we will not know what is the number of female and male population difference from the 9 most populated planning areas.\n\n\n4.2.3 Reference line\nIn the remake, the reference line is added which is the avg population (sum of total population divided by 9 planning areas/19 age groups/2 genders).\n\n\n4.2.4 interactive function\nAdd on interactive function into the chart to show the population numbers when move cursor."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#aesthetics",
+    "href": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#aesthetics",
+    "title": "Take-home Exercise 2",
+    "section": "4.3 Aesthetics",
+    "text": "4.3 Aesthetics\n\n4.3.1 Application of pre-attentive principle\nColours. The original age-sex pyramid used one color for two genders. However, this display does not show a clear comparison betewwn male and female population. It does not help user to distinguish the genders from the 1st attention. . It’s suggested to choose two different colors to indicate the two different genders in this visualization.\n\n\n4.3.2 X-Axis Title & Labels\nThe population number is large. It’s good to show number in the unit of thousand With the aid of the newly added x-axis title and labels, it makes it easier for users to read and interpret this visualization. The X-axis labels will be converted to positive values because population should be positive values.\n\n\n4.3.3 Caption\nThe caption to mention the data source for this visualization has also been included at the bottom in a clean manner."
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#calculate-total-population-count-by-planning-area",
+    "href": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#calculate-total-population-count-by-planning-area",
+    "title": "Take-home Exercise 2",
+    "section": "Calculate total population count by planning area",
+    "text": "Calculate total population count by planning area\n\npop_pa <- population %>%\n  select(PA,AG,Sex,Pop) %>%\n  group_by(PA) %>%\n  summarise(totalPop = sum(Pop))"
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#sort-planning-areas-by-population",
+    "href": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#sort-planning-areas-by-population",
+    "title": "Take-home Exercise 2",
+    "section": "Sort planning areas by population",
+    "text": "Sort planning areas by population\n\npop_sorted <- pop_pa[order(pop_pa$totalPop, decreasing = TRUE), ]"
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#select-top-9-planning-areas-by-population",
+    "href": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#select-top-9-planning-areas-by-population",
+    "title": "Take-home Exercise 2",
+    "section": "Select top 9 planning areas by population",
+    "text": "Select top 9 planning areas by population\n\npop_filtered <- head(pop_sorted, 9)"
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#filter-the-raw-dataset-according-to-the-top-9-planning-areas-by-population",
+    "href": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#filter-the-raw-dataset-according-to-the-top-9-planning-areas-by-population",
+    "title": "Take-home Exercise 2",
+    "section": "Filter the raw dataset according to the top 9 planning areas by population",
+    "text": "Filter the raw dataset according to the top 9 planning areas by population\n\npop_pa_filtered <- population %>%\n  filter(PA %in% pop_filtered$PA)"
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#aggregate-data-by-planning-areas-age-group-and-sex",
+    "href": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#aggregate-data-by-planning-areas-age-group-and-sex",
+    "title": "Take-home Exercise 2",
+    "section": "aggregate data by planning areas, age group and sex",
+    "text": "aggregate data by planning areas, age group and sex\n\nPop_pa_age_sex <- aggregate(Pop ~ PA + AG + Sex, data = pop_pa_filtered, FUN = sum)"
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#sort-dataset-by-top-9-planning-areas-and-age-group",
+    "href": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#sort-dataset-by-top-9-planning-areas-and-age-group",
+    "title": "Take-home Exercise 2",
+    "section": "Sort dataset by top 9 planning areas and age group",
+    "text": "Sort dataset by top 9 planning areas and age group\nverify the age groups\n\nfreq(data=Pop_pa_age_sex , \n     input = 'AG')\n\nWarning: The `<scale>` argument of `guides()` cannot be `FALSE`. Use \"none\" instead as\nof ggplot2 3.3.4.\nℹ The deprecated feature was likely used in the funModeling package.\n  Please report the issue at <https://github.com/pablo14/funModeling/issues>.\n\n\n\n\n\n            AG frequency percentage cumulative_perc\n1       0_to_4        18       5.26            5.26\n2     10_to_14        18       5.26           10.52\n3     15_to_19        18       5.26           15.78\n4     20_to_24        18       5.26           21.04\n5     25_to_29        18       5.26           26.30\n6     30_to_34        18       5.26           31.56\n7     35_to_39        18       5.26           36.82\n8     40_to_44        18       5.26           42.08\n9     45_to_49        18       5.26           47.34\n10      5_to_9        18       5.26           52.60\n11    50_to_54        18       5.26           57.86\n12    55_to_59        18       5.26           63.12\n13    60_to_64        18       5.26           68.38\n14    65_to_69        18       5.26           73.64\n15    70_to_74        18       5.26           78.90\n16    75_to_79        18       5.26           84.16\n17    80_to_84        18       5.26           89.42\n18    85_to_89        18       5.26           94.68\n19 90_and_over        18       5.26          100.00"
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#order-the-age-groups",
+    "href": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#order-the-age-groups",
+    "title": "Take-home Exercise 2",
+    "section": "order the age groups",
+    "text": "order the age groups\n\nPop_pa_age_sex$AG[which(Pop_pa_age_sex$AG==\"0_to_4\")] <-\"00_to_04\"\nPop_pa_age_sex$AG[which(Pop_pa_age_sex$AG==\"5_to_9\")] <-\"05_to_09\""
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#derived-the-population-in-thousand-and-avg-population-in-thousand",
+    "href": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#derived-the-population-in-thousand-and-avg-population-in-thousand",
+    "title": "Take-home Exercise 2",
+    "section": "Derived the population in thousand and avg population in thousand",
+    "text": "Derived the population in thousand and avg population in thousand\n\npop_final <- Pop_pa_age_sex %>%\n\n  mutate(Pop_2=round(Pop/1000))%>%\n  mutate(Avg=round(sum(Pop)/1000/9/19/2))%>%\n  arrange(PA, AG)"
+  },
+  {
+    "objectID": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#create-the-age_sex_pyramid",
+    "href": "Take-home Exercise/Take-home Exercise 2/Take-home Exercise 2.html#create-the-age_sex_pyramid",
+    "title": "Take-home Exercise 2",
+    "section": "Create the age_sex_pyramid",
+    "text": "Create the age_sex_pyramid\n\nage_sex_pyramid <- ggplot(data=pop_final,aes(x=AG,fill=Sex)) +\n  theme_bw() + ## change background color to white\n  geom_bar(data=subset(pop_final,Sex==\"Females\"),stat='identity',aes(y=Pop_2)) +\n  geom_bar(data=subset(pop_final,Sex==\"Males\"),stat='identity',aes(y=Pop_2*(-1)))  + \n  scale_y_continuous(breaks=seq(-20,20,5),labels=abs(seq(-20,20,5))) +\n  facet_wrap(~ PA)+\n  coord_flip()+\n  theme_bw() +\n  scale_fill_manual(values = c(\"Males\" = \"blue\", \n                               \"Females\" = \"red\")) +\n\n\n  labs(x = \"Age Group\", \n       y = \"Population(in thousand)\",\n       title = \"Singapore Population Pyramid by age&sex from top 9 Planning Areas in June 2022\",  \n       subtitle = \"Top 9 Planning Areas by Population, 2022\",\n       caption = \"Data Source: https://www.singstat.gov.sg/find-data/search-by-theme/population/geographic-distribution/latest-data\")+\n\n    theme(plot.title = element_text(hjust=0.5, size=14),\n          plot.subtitle = element_text(hjust = 0.5,size = 8),\n          legend.title = element_text(size=10),\n          legend.text = element_text(size=8),\n          axis.text = element_text(face=\"bold\"),\n          axis.ticks.x=element_blank(),\n          axis.text.x = element_text(angle = 0),\n          axis.title.y=element_text(angle=0))\n\nage_sex_pyramid_final <-age_sex_pyramid + geom_hline(yintercept = pop_final$Avg,linetype=\"dotted\", color = \"black\") + geom_hline(yintercept = -(pop_final$Avg),linetype=\"dotted\", color = \"black\")+\n\n  geom_text(aes(0,Avg,label = 'Avg', vjust = -1))+\n  geom_text(aes(0,-Avg,label = 'Avg', vjust = -1)) \n\nggplotly(age_sex_pyramid_final)"
   }
 ]

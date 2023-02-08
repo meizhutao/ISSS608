@@ -1,0 +1,43 @@
+---
+title: "In-class Ex3"
+auther: "Meizhu Tao"
+date: "28 January 2023"
+date mofified: "`r Sys.Date()`"
+execute:
+   echo: true
+   eval: true
+   warning: false
+format: html
+editer: visual
+---
+
+Installing and loading R packages
+
+Two packages will be installed and loaded. They are tidyverse and ggiraph.
+
+```{r}
+pacman::p_load(ggiraph, tidyverse)
+
+```
+
+Importing data
+```{r}
+exam_data <- read_csv("data/Exam_data.csv")
+```
+
+```{r}
+p <- ggplot(data=exam_data, 
+       aes(x = MATHS)) +
+  geom_dotplot_interactive(
+    aes(tooltip = ID),
+    stackgroups = TRUE, 
+    binwidth = 1, 
+    method = "histodot") +
+  scale_y_continuous(NULL, 
+                     breaks = NULL)
+girafe(
+  ggobj = p,
+  width_svg = 6,
+  height_svg = 6*0.618
+)
+```
