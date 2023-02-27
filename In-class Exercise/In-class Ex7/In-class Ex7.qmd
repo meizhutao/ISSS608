@@ -1,0 +1,25 @@
+---
+title: "In-class Ex7"
+editor: visual
+format: html
+code-fold: true
+code-summary: "Show the code"
+warning: false
+message: false
+Author: Tao meizhu
+---
+
+```{r}
+pacman::p_load(sf, tmap, tidyverse,ggplot2)
+
+```
+
+```{r}
+mpsz <- st_read(dsn = "data/geospatial", 
+                layer = "MP14_SUBZONE_WEB_PL")
+```
+
+
+
+
+

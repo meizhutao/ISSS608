@@ -1,0 +1,702 @@
+---
+title: "Take-home Exercise 3"
+editor: visual
+format: html
+code-fold: true
+code-summary: "Show the code"
+warning: false
+message: false
+Author: Tao meizhu
+---
+
+
+# 1.0 The Task
+In this take-home exercise, we are required to uncover the salient patterns of the resale prices of public housing property by residential towns and estates in Singapore by using appropriate analytical visualisation techniques learned in Lesson 4: Fundamentals of Visual Analytics. Students are encouraged to apply appropriate interactive techniques to enhance user and data discovery experiences.
+
+For the purpose of this study, the focus should be on 3-ROOM, 4-ROOM and 5-ROOM types. You can choose to focus on either one housing type or multiple housing types. The study period should be on 2022.
+
+# 2.0 The Data
+Resale flat princes based on registration date from Jan-2017 onwards should be used to prepare the analytical visualisation. It is available at Data.gov.sg.
+
+# 3.0 Getting Started
+## 3.1 Packages used
+Before we get started, it is important for us to install the necessary R packages into R and launch these R packages into R environment.
+
+The R packages needed for this exercise are as follows:
+
+```{r}
+pacman::p_load(ggstatsplot, ggthemes, plotly, corrplot, lubridate, ggpubr, plotly, gganimate, viridis, ggridges, ggrepel, testthat, hmisc, tidyverse, funModeling, PMCMRplus, gifski, ggplot2,treemap )
+```
+
+# 4 Data preparation
+
+## 4.1 Importing Data
+
+```{r}
+resale_prices <- read_csv("data/aspatial/resale-flat-prices-based-on-registration-date-from-jan-2017-onwards.csv")
+```
+
+## 4.2 Data Wrangling
+
+### 4.2.1 Get summary of the data
+
+```{r}
+summary(resale_prices)
+```
+
+### 4.2.2 Check if any missing values
+```{r}
+skimr::skim(resale_prices)
+```
+
+### 4.2.3 EDA
+```{r}
+freq(data=resale_prices, 
+     input = 'town')
+```
+
+```{r}
+freq(data=resale_prices, 
+     input = 'flat_type')
+```
+
+```{r}
+freq(data=resale_prices, 
+     input = 'storey_range')
+```
+
+```{r}
+freq(data=resale_prices, 
+     input = 'floor_area_sqm')
+```
+
+```{r}
+freq(data=resale_prices, 
+     input = 'lease_commence_date')
+```
+
+```{r}
+unique(resale_prices$storey_range)
+```
+
+```{r}
+gghistostats(
+  data = resale_prices,
+  x = resale_price,
+  type = "bayes",
+  test.value = 60,
+  xlab = "Resale price"
+) +
+  theme_minimal()
+  
+  
+```
+
+### 4.2.4 Derive new variables
+Separate the years and months.
+```{r}
+resale_prices_1 <- resale_prices %>% 
+  separate(month, c("Year", "Month"), sep = "-")
+```
+
+Convert string to integer.
+```{r}
+resale_prices_1$Year <- strtoi(resale_prices_1$Year)
+resale_prices_1$Month <- strtoi(resale_prices_1$Month)
+```
+
+convert reaming_lease to reaming_lease_year.
+```{r}
+resale_prices_2 <- bind_cols(resale_prices_1,
+                              (str_split_fixed(resale_prices_1$remaining_lease, 
+                                           " ", 
+                                           4) %>% 
+                             data.frame() %>% 
+                             rename(year_lease = X1, 
+                                    omit1 = X2, 
+                                    month_lease = X3, 
+                                    omit2 = X4) %>%
+                             select (-c(omit1, omit2)) %>%
+                             mutate(month_lease = 
+                                      ifelse(month_lease == "", 0, 
+                                             month_lease)) %>% 
+                             mutate_if(is.character, as.numeric))
+                          ) %>%
+  mutate (remaining_lease_years = round(year_lease + month_lease/12,2))
+```
+
+derive new variables price_psm,price_thousand,property_age.
+```{r}
+resale_prices_3 <- resale_prices_2 %>%
+  mutate(price_psm = round(resale_price / floor_area_sqm)) %>%
+  mutate(price_thousand = round(resale_price / 1000)) 
+```
+
+Filter by year 2022
+```{r}
+resale_prices_2022 <- resale_prices_3 %>%
+  filter(Year == "2022", flat_type %in% c("3 ROOM", "4 ROOM", "5 ROOM"))
+```
+
+### 4.2.5 Rview output
+```{r}
+unique(resale_prices_2022$Year)
+unique(resale_prices_2022$flat_type)
+```
+
+```{r}
+summary(resale_prices_2022)
+```
+
+# 5.0 Data Visualisation
+## 5.1 Correlation analysis
+```{r}
+resale_prices_2022_cor <- resale_prices_2022%>%
+  select (1:2, 8, 10, 15:17)
+```
+
+```{r cluster_vars.cor, fig.height = 5, fig.width = 6}
+cluster_vars.cor = cor(resale_prices_2022_cor[,3:6])
+corrplot.mixed(cluster_vars.cor,
+         lower = "ellipse", 
+               upper = "number",
+               tl.pos = "lt",
+               diag = "l",
+               tl.col = "black")
+```
+There is no strong correlation amongst the above variables.
+
+## 5.2 Normality analysis
+### 5.2.1 Overall check Prices by flat_type
+```{r}
+set.seed(1234)
+
+resale_prices_2022_3room <- resale_prices_2022 %>%
+  filter(flat_type == "3 ROOM")
+resale_prices_2022_4room <- resale_prices_2022 %>%
+  filter(flat_type == "4 ROOM")
+resale_prices_2022_5room <- resale_prices_2022 %>%
+  filter(flat_type == "5 ROOM")
+
+p1 <- gghistostats(
+  data = resale_prices_2022_3room,
+  x = price_thousand,
+  type = "bayes",
+  test.value = 60,
+  xlab = "3 room Price in Thousands") +
+  
+  theme_minimal() 
+        
+p2 <- gghistostats(
+  data = resale_prices_2022_4room,
+  x = price_thousand,
+  type = "bayes",
+  test.value = 60,
+  xlab = "4 room Price in Thousands") +
+  
+  theme_minimal() 
+
+p3 <- gghistostats(
+  data = resale_prices_2022_5room,
+  x = price_thousand,
+  type = "bayes",
+  test.value = 60,
+  xlab = "5 room Price in Thousands") +
+  
+  theme_minimal() 
+ggarrange(p1,p2,p3, ncol = 3, nrow = 1)
+```
+The chart shows, overall, 3 Room price mean is about 350k, 4 Room price mean is about 464K, 5 Room price mean is about 555k.
+
+## 5.3 Proportion and numbers of flat types in Singapore
+### 5.3.1 Derive new varibles
+```{r}
+flat_type_proportion<- resale_prices_2022 %>% 
+  group_by(town, flat_type) %>% 
+  summarise(
+  
+    n=n())%>% 
+  mutate(pct_flat = round(n/sum(n)*100)) 
+head(flat_type_proportion)
+```
+
+### 5.3.2 Proportion of flat types in Singapore
+```{r}
+plot_ly(flat_type_proportion, labels = ~flat_type, values = ~pct_flat, type = 'pie') %>% layout(title = 'Pie chart by flat types in Singapore in 2022',
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
+The above chart shows, the top 1 proportion flat type is 4 Room, followed by 3 Room and 5 Room.
+
+### 5.3.4 Derive new varibles
+```{r}
+
+
+flat_type_number<- resale_prices_2022 %>% 
+  group_by(town, flat_type) %>% 
+  summarise(
+  
+    n=n())
+
+head(flat_type_number)
+```
+
+### 5.3.5 Numbers of flat types by planning areas in Singapore
+```{r}
+ggplot(flat_type_number,aes(y = reorder(town,n),x = n,fill = flat_type))+
+geom_bar(stat = 'identity')+
+coord_cartesian(xlim = c(0,3000))+
+scale_fill_brewer(palette = "RdBu")+
+labs(title = "Number of flats by flat type and by planning area",
+       x = "Number of flats",
+       y = "Planning areas in Singapore",
+       fill = "flat_type")
+```
+
+From the above chart, we can see the top 3 areas which have most flats are SENGKANG, PUNGGOL and YISHUN.
+
+## 5.4 resale prices by planning areas
+### 5.4.1 Overview of resale prices by planning areas by months
+```{r}
+ggplot(data = resale_prices_2022, aes(x = price_thousand, y = town, fill = after_stat(x))) +
+  
+  geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
+  
+  theme_minimal() +
+  
+  labs(title = 'Resale Prices by Planning Area in 2022, Month: {frame_time}') +
+  
+  theme(legend.position="none",
+ 
+  plot.title = element_text(face = "bold", size = 12),
+  
+  axis.title.x = element_text(size = 10, hjust = 1),
+  axis.title.y = element_text(size = 10, angle = 360),
+  axis.text = element_text(size = 8)) +
+  
+  scale_fill_viridis(name = "price_thousand", option = "D") +
+  
+  transition_time(resale_prices_2022$Month) +
+  ease_aes('linear')
+```
+
+### 5.4.2 Average resale prices by room type by planning areas
+Visualizing the uncertainty of point estimates
+
+```{r}
+
+prices_mean_by_town <- resale_prices_2022 %>% 
+  group_by(town) %>% 
+  summarise(
+    flat_type,
+    n=n(),
+    mean = round(mean(price_psm)),
+    sd=sd(price_psm))%>%
+ 
+  mutate(se=sd/sqrt(n-1))
+```
+
+```{r}
+knitr::kable(head(prices_mean_by_town), format = 'html')
+```
+
+:::panel-tabset
+### 3 Room
+```{r}
+type <- '3 ROOM'
+prices_by_town <- resale_prices_2022 %>% filter(flat_type==type) %>% group_by(town)  
+ggplot(prices_by_town, aes(x=reorder(town, price_psm), y=price_psm, color = flat_type)) +
+  geom_boxplot() +
+  labs(title="Flat Resale Price (psm) by Town for 3 Room ", 
+       x="Town", 
+       y="Resale Price ($ psm)") +
+  theme_classic() +
+  theme(plot.title = element_text(size=16, hjust=0.5),
+        axis.title.x = element_text(size=15),
+        axis.text.x = element_text(angle=45, hjust=1),
+        axis.title.y = element_text(size=15))  
+
+
+prices_mean_by_town%>% 
+  filter(flat_type==type) 
+ggplot(prices_mean_by_town) +
+  geom_errorbar(
+    aes(x=reorder(town,mean), 
+        ymin=mean-se, 
+        ymax=mean+se), 
+    width=0.2, 
+    colour="black", 
+    alpha=0.9, 
+    size=1.5) +
+  geom_point(aes
+           (x=town, 
+            y=mean), 
+           stat="identity", 
+           color="red",
+           size = 1.5,
+           alpha=1) +
+
+  theme_classic() +
+  theme(plot.title = element_text(size=16, hjust=0.5),
+        axis.title.x = element_text(size=12),
+        axis.text.x = element_text(angle=60, hjust=1),
+        axis.title.y = element_text(size=12)) + 
+  ggtitle("Standard error of 3 Room prices_mean_by_town")
+ggarrange(prices_by_town, prices_mean_by_town,ncol = 1, nrow =2 )
+```
+The above charts are showing CENTRAL AREA, QUEENSTOWN and KALANG are the top 3 areas which have the higest mean price with 90% of confidence interval. 
+### 4 Room
+```{r}
+type <- '4 ROOM'
+prices_by_town <- resale_prices_2022 %>% filter(flat_type==type) %>% group_by(town)  
+ggplot(prices_by_town, aes(x=reorder(town, price_psm), y=price_psm, color = flat_type)) +
+  geom_boxplot() +
+  labs(title="Flat Resale Price (psm) by Town for 4 Room ", 
+       x="Town", 
+       y="Resale Price ($ psm)") +
+  theme_classic() +
+  theme(plot.title = element_text(size=16, hjust=0.5),
+        axis.title.x = element_text(size=15),
+        axis.text.x = element_text(angle=45, hjust=1),
+        axis.title.y = element_text(size=15))  
+
+prices_mean_by_town%>% 
+  filter(flat_type==type) 
+ggplot(prices_mean_by_town) +
+  geom_errorbar(
+    aes(x=reorder(town,mean), 
+        ymin=mean-se, 
+        ymax=mean+se), 
+    width=0.2, 
+    colour="black", 
+    alpha=0.9, 
+    size=1.5) +
+  geom_point(aes
+           (x=town, 
+            y=mean), 
+           stat="identity", 
+           color="red",
+           size = 1.5,
+           alpha=1) +
+  theme_classic() +
+  theme(plot.title = element_text(size=16, hjust=0.5),
+        axis.title.x = element_text(size=12),
+        axis.text.x = element_text(angle=60, hjust=1),
+        axis.title.y = element_text(size=12)) + 
+  ggtitle("Standard error of 4 Room prices_mean_by_town")
+ggarrange(prices_by_town, prices_mean_by_town,ncol = 1, nrow =2 )
+```
+The above charts are showing CENTRAL AREA, QUEENSTOWN and KALANG are the top 3 areas which have the higest mean price with 90% of confidence interval.
+
+### 5 Room
+```{r}
+type <- '5 ROOM'
+prices_by_town <- resale_prices_2022 %>% filter(flat_type==type) %>% group_by(town)  
+ggplot(prices_by_town, aes(x=reorder(town, price_psm), y=price_psm, color = flat_type)) +
+  geom_boxplot() +
+  labs(title="Flat Resale Price (psm) by Town for 5 Room ", 
+       x="Town", 
+       y="Resale Price ($ psm)") +
+  theme_classic() +
+  theme(plot.title = element_text(size=16, hjust=0.5),
+        axis.title.x = element_text(size=15),
+        axis.text.x = element_text(angle=45, hjust=1),
+        axis.title.y = element_text(size=15))  
+
+
+prices_mean_by_town%>% 
+  filter(flat_type==type) 
+ggplot(prices_mean_by_town) +
+  geom_errorbar(
+    aes(x=reorder(town,mean), 
+        ymin=mean-se, 
+        ymax=mean+se), 
+    width=0.2, 
+    colour="black", 
+    alpha=0.9, 
+    size=1.5) +
+  geom_point(aes
+           (x=town, 
+            y=mean), 
+           stat="identity", 
+           color="red",
+           size = 1.5,
+           alpha=1) +
+
+  theme_classic() +
+  theme(plot.title = element_text(size=16, hjust=0.5),
+        axis.title.x = element_text(size=12),
+        axis.text.x = element_text(angle=60, hjust=1),
+        axis.title.y = element_text(size=12)) + 
+  ggtitle("Standard error of 5 Room prices_mean_by_town")
+ggarrange(prices_by_town, prices_mean_by_town,ncol = 1, nrow =2 )
+```
+The above charts are showing CENTRAL AREA, QUEENSTOWN and KALANG are the top 3 areas which have the higest mean price with 90% of confidence interval. 
+
+## 5.5 Resale price by remaining_lease_year
+::: panel-tabset
+### 3 Room
+```{r}
+type <- "3 ROOM"
+ggscatterstats(
+ data = resale_prices_2022 %>% filter(flat_type==type),
+x = remaining_lease_years,
+y = price_thousand,
+marginal = FALSE)+
+  theme_minimal() +
+  labs(title=paste("Correlation of Resale Price and Remaining_lease_years", lapply(type, tolower), "flats"), x="Remaining_lease_years", y="Resale Price (in thousand)", fill="Resale Price (in thousand)")+
+theme(
+        plot.title = element_text(hjust = 0.2, size = 15, face = 'bold'),
+        plot.margin = margin(20, 20, 20, 20),
+        legend.position = "bottom",
+        
+        axis.text = element_text(size = 10, face = "bold"),
+        axis.title = element_text(size = 12, face = "bold"))
+
+```
+The above chart show the higher remaining lease years, the higher unit price. The coefficient is 0.61 which suggests there is a slight correlation. 
+
+### 4 Room
+```{r}
+type <- '4 ROOM'
+ggscatterstats(
+ data = resale_prices_2022 %>% filter(flat_type==type),
+x = remaining_lease_years,
+y = price_thousand,
+marginal = FALSE) +
+  theme_minimal() +
+  labs(title=paste("Correlation of Resale Price and Remaining_lease_years", lapply(type, tolower), "flats"), x="Remaining_lease_years", y="Resale Price (in thousand)", fill="Resale Price (in thousand)")+
+theme(
+        plot.title = element_text(hjust = 0.2, size = 15, face = 'bold'),
+        plot.margin = margin(20, 20, 20, 20),
+        legend.position = "bottom",
+        
+        axis.text = element_text(size = 10, face = "bold"),
+        axis.title = element_text(size = 12, face = "bold"))
+```
+The above chart show the higher remaining lease years, the higher unit price. The coefficient is 0.41 which suggests correlation is not strong. 
+
+### 5 Room
+```{r}
+type <- '5 ROOM'
+ggscatterstats(
+ data = resale_prices_2022 %>% filter(flat_type==type),
+x = remaining_lease_years,
+y = price_thousand,
+marginal = FALSE) +
+  theme_minimal() +
+  labs(title=paste("Correlation of Resale Price and Remaining_lease_years", lapply(type, tolower), "flats"), x="Remaining_lease_years", y="Resale Price (in thousand)", fill="Resale Price (in thousand)")+
+theme(
+        plot.title = element_text(hjust = 0.2, size = 15, face = 'bold'),
+        plot.margin = margin(20, 20, 20, 20),
+        legend.position = "bottom",
+        
+        axis.text = element_text(size = 10, face = "bold"),
+        axis.title = element_text(size = 12, face = "bold"))
+```
+The above chart show the higher remaining lease years, the higher unit price. The coefficient is 0.18 which suggests correlation is not strong. 
+
+
+## 5.6 Resale prices by floor_area_sqm
+::: panel-tabset
+### 3 Room
+```{r}
+type <- '3 ROOM'
+ggscatterstats(
+ data = resale_prices_2022 %>% filter(flat_type==type),
+x = floor_area_sqm,
+y = price_thousand,
+marginal = FALSE) +
+  theme_minimal() +
+  labs(title=paste("Correlation of Resale Price and floor_area_sqm", lapply(type, tolower), "flats"), x="floor_area_sqm", y="Resale Price (in thousand)", fill="Resale Price (psm)")+
+theme(
+        plot.title = element_text(hjust = 0.2, size = 15, face = 'bold'),
+        plot.margin = margin(20, 20, 20, 20),
+        legend.position = "bottom",
+        
+        axis.text = element_text(size = 10, face = "bold"),
+        axis.title = element_text(size = 12, face = "bold"))
+```
+The above chart show the higher remaining lease years, the higher unit price. The coefficient is 0.25 which suggests correlation is not strong. 
+
+### 4 Room
+```{r}
+type <- '4 ROOM'
+ggscatterstats(
+ data = resale_prices_2022 %>% filter(flat_type==type),
+x = floor_area_sqm,
+y = price_thousand,
+marginal = FALSE) +
+  theme_minimal() +
+  labs(title=paste("Correlation of Resale Price (psm) and floor_area_sqm", lapply(type, tolower), "flats"), x="floor_area_sqm", y="Resale Price (in thousand)", fill="Resale Price (in thousand)")+
+theme(
+        plot.title = element_text(hjust = 0.2, size = 15, face = 'bold'),
+        plot.margin = margin(20, 20, 20, 20),
+        legend.position = "bottom",
+        
+        axis.text = element_text(size = 10, face = "bold"),
+        axis.title = element_text(size = 12, face = "bold"))
+```
+The above chart show the higher remaining lease years, the higher unit price. The coefficient is -0.05 which suggests correlation is not strong. 
+
+```{r}
+type <- '5 ROOM'
+ggscatterstats(
+ data = resale_prices_2022 %>% filter(flat_type==type),
+x = floor_area_sqm,
+y = price_thousand,
+marginal = FALSE) +
+  
+  theme_minimal() +
+  
+  labs(title=paste("Correlation of Resale Price (psm) and floor_area_sqm", lapply(type, tolower), "flats"), x="floor_area_sqm", y="Resale Price ($ psm)", fill="Resale Price (psm)")+
+theme(
+        plot.title = element_text(hjust = 0.2, size = 15, face = 'bold'),
+        plot.margin = margin(20, 20, 20, 20),
+        legend.position = "bottom",
+        
+        axis.text = element_text(size = 10, face = "bold"),
+        axis.title = element_text(size = 12, face = "bold"))
+```
+The above chart show the higher remaining lease years, the higher unit price. The coefficient is 0.02 which suggests correlation is not strong. 
+
+
+## 5.7 resalse price by time(sale months)
+::: panel-tabset
+### 3 Room
+```{r}
+
+type <- '3 ROOM'
+na.omit(resale_prices_2022) %>% 
+  filter(flat_type == type) %>% 
+  ggplot(aes(x = flat_type, y = price_thousand)) +
+  
+  geom_boxplot(aes(fill = as.factor(Month)), color = "grey") +
+  
+  stat_summary(fun = "mean", geom = "point", color = "black") +
+  
+  theme_minimal() +
+  
+  scale_fill_brewer(palette = "Paired") +
+
+ labs( title = "Monthly Resale prices by Flat Types",
+       y = "Resale price (in thousand)",
+       x = "Flat Type",
+       fill = "Month") +theme_classic()+
+
+theme(
+        plot.title = element_text(hjust = 0.5, size = 12, face = 'bold'),
+        plot.margin = margin(20, 20, 20, 20),
+        legend.position = "bottom",
+        
+        axis.text = element_text(size = 10, face = "bold"),
+        axis.title.x = element_text(hjust = 0.5, size = 12, face = "bold"),
+        axis.title.y = element_text(hjust = 0.5, size = 12, face = "bold"))
+```
+The above chart shows there is no significant increasing or decreasing trend of resale price over months.
+
+### 4 Room
+```{r}
+
+type <- '4 ROOM'
+na.omit(resale_prices_2022) %>% 
+  filter(flat_type == type) %>% 
+  ggplot(aes(x = flat_type, y = price_thousand)) +
+  
+  geom_boxplot(aes(fill = as.factor(Month)), color = "grey") +
+  
+  stat_summary(fun = "mean", geom = "point", color = "black") +
+  
+  theme_minimal() +
+  
+  scale_fill_brewer(palette = "Paired") +
+
+ labs( title = "Monthly Resale prices by Flat Types",
+       y = "Resale price (in thousand)",
+       x = "Flat Type",
+       fill = "Month") +theme_classic()+
+
+theme(
+        plot.title = element_text(hjust = 0.5, size = 12, face = 'bold'),
+        plot.margin = margin(20, 20, 20, 20),
+        legend.position = "bottom",
+        
+        axis.text = element_text(size = 10, face = "bold"),
+        axis.title.x = element_text(hjust = 0.5, size = 12, face = "bold"),
+        axis.title.y = element_text(hjust = 0.5, size = 12, face = "bold"))
+```
+The above chart shows there is no significant increasing or decreasing trend of resale price over months.
+
+### 5 Room
+```{r}
+
+type <- '5 ROOM'
+na.omit(resale_prices_2022) %>% 
+  filter(flat_type == type) %>% 
+  ggplot(aes(x = flat_type, y = price_thousand)) +
+  
+  geom_boxplot(aes(fill = as.factor(Month)), color = "grey") +
+  
+  stat_summary(fun = "mean", geom = "point", color = "black") +
+  
+  theme_minimal() +
+  
+  scale_fill_brewer(palette = "Paired") +
+
+ labs( title = "Monthly Resale prices by Flat Types",
+       y = "Resale price (in thousand)",
+       x = "Flat Type",
+       fill = "Month") +theme_classic()+
+
+theme(
+        plot.title = element_text(hjust = 0.5, size = 12, face = 'bold'),
+        plot.margin = margin(20, 20, 20, 20),
+        legend.position = "bottom",
+        
+        axis.text = element_text(size = 10, face = "bold"),
+        axis.title.x = element_text(hjust = 0.5, size = 12, face = "bold"),
+        axis.title.y = element_text(hjust = 0.5, size = 12, face = "bold"))
+```
+The above chart shows there is no significant increasing or decreasing trend of resale price over months.
+   
+
+## 5.7 Resale price by storey_range
+
+### Treemap
+
+```{r}
+#treemap  
+
+treemap_storey <- treemap (resale_prices_2022,
+        index= c("flat_type", "town"),
+        vSize= "price_thousand",
+        vColor = "storey_range",
+        type="categorical",
+        palette = "Blues",
+        title="Resale price by storey_range",
+        title.legend = "Price_thousand"
+        )
+
+```
+The above chart shows:
+For 3 Room flat type, the unit prices are higher at YISHUN, ANG MIAO KIAO, BEDOK, storey ranging from 04-06 to 07-09.
+For 4 Room flat type, the unit prices are higher at SENGKANG, PUNGGOL, YISHUN, storey ranging from 07-09, 10-12 to 13-15.
+For 5 Room flat type, the unit prices are higher at SENGKANG, PUNGGOL, JURONG WEST, storey ranging from 07-09, 10-12 to 13-15.
+
+## 6.0 Summary of insights 
+Finding 1 - Geography
+Overall, the top 1 proportion flat type is 4 Room, followed by 3 Room and 5 Room in Singapore in 2022. When looking at the numbers of flats, we can see that SENGKANG, PUNGGOL and YISHUN have the most of the flats of all flat types.This could be seen in section 5.3 Proportion and absolute numbers of flat types in Singapore.
+
+Location had a great effect on flat resale prices. Generally, the CENTRAL AREA had the most expensive flats by mean price per square meter followed by QUEENSTOWN and KALLANG. This could be seen from the box plots and uncertainty of point estimates in section 5.4.2 Average resale prices by room type by planning areas.
+
+
+Finding 2 - Resale price and remaining lease year, floor area sqm, Time(months)
+Generally, there is no strong correlation between the unit price and remaining lease, unit price and floor area sqm. This could be seen in section 5.5 Resale price by remaining_lease_year and 5.6 Resale prices by floor_area_sqm.
+
+There is no significant increasing or decreasing trend of resale price over months.This could be seen in section 5.7 resalse price by time(sale months). 
+
+Finding 3 - Resale price by storey_range
+For 3 Room flat type, the unit prices are higher at YISHUN, ANG MIAO KIAO, BEDOK, storey ranging from 04-06 to 07-09.
+For 4 Room flat type, the unit prices are higher at SENGKANG, PUNGGOL, YISHUN, storey ranging from 07-09, 10-12 to 13-15.
+For 5 Room flat type, the unit prices are higher at SENGKANG, PUNGGOL, JURONG WEST, storey ranging from 07-09, 10-12 to 13-15.
+This could be seen in section 5.7 Resale price by storey_range.

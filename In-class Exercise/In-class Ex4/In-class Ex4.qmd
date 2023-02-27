@@ -9,6 +9,7 @@ execute:
   warning: false
 editor: visual
 ---
+
 ```{r}
 pacman::p_load(plotly,DT,ggstatsplot, ggplot2, patchwork,readxl, performance, parameters, see, tidyverse)
 ```
@@ -107,4 +108,3 @@ model1 <- lm(Price ~ Age_08_04 + KM +
 check_n <- check_normality(model1)
 plot(check_n)
 ```
-
