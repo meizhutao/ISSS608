@@ -50,36 +50,43 @@ skimr::skim(resale_prices)
 ```
 
 ### 4.2.3 EDA
-```{r}
+town
+```{r eval=FALSE}
 freq(data=resale_prices, 
      input = 'town')
 ```
 
-```{r}
+flat_type
+```{r eval=FALSE}
 freq(data=resale_prices, 
      input = 'flat_type')
 ```
 
-```{r}
+storey_range
+```{r eval=FALSE}
 freq(data=resale_prices, 
      input = 'storey_range')
 ```
 
-```{r}
+floor_area_sqm
+```{r eval=FALSE}
 freq(data=resale_prices, 
      input = 'floor_area_sqm')
 ```
 
-```{r}
+lease_commence_date
+```{r eval=FALSE}
 freq(data=resale_prices, 
      input = 'lease_commence_date')
 ```
 
-```{r}
-unique(resale_prices$storey_range)
+
+```{r eval=FALSE}
+unique(resale_prices$remaining_lease)
 ```
 
-```{r}
+resale_price
+```{r eval=FALSE}
 gghistostats(
   data = resale_prices,
   x = resale_price,
@@ -345,6 +352,7 @@ ggplot(prices_mean_by_town) +
 ggarrange(prices_by_town, prices_mean_by_town,ncol = 1, nrow =2 )
 ```
 The above charts are showing CENTRAL AREA, QUEENSTOWN and KALANG are the top 3 areas which have the higest mean price with 90% of confidence interval. 
+
 ### 4 Room
 ```{r}
 type <- '4 ROOM'
@@ -432,6 +440,7 @@ ggplot(prices_mean_by_town) +
 ggarrange(prices_by_town, prices_mean_by_town,ncol = 1, nrow =2 )
 ```
 The above charts are showing CENTRAL AREA, QUEENSTOWN and KALANG are the top 3 areas which have the higest mean price with 90% of confidence interval. 
+:::
 
 ## 5.5 Resale price by remaining_lease_year
 ::: panel-tabset
@@ -495,7 +504,7 @@ theme(
         axis.title = element_text(size = 12, face = "bold"))
 ```
 The above chart show the higher remaining lease years, the higher unit price. The coefficient is 0.18 which suggests correlation is not strong. 
-
+:::
 
 ## 5.6 Resale prices by floor_area_sqm
 ::: panel-tabset
@@ -539,6 +548,7 @@ theme(
 ```
 The above chart show the higher remaining lease years, the higher unit price. The coefficient is -0.05 which suggests correlation is not strong. 
 
+### 5 Room
 ```{r}
 type <- '5 ROOM'
 ggscatterstats(
@@ -559,7 +569,7 @@ theme(
         axis.title = element_text(size = 12, face = "bold"))
 ```
 The above chart show the higher remaining lease years, the higher unit price. The coefficient is 0.02 which suggests correlation is not strong. 
-
+:::
 
 ## 5.7 resalse price by time(sale months)
 ::: panel-tabset
@@ -658,7 +668,7 @@ theme(
         axis.title.y = element_text(hjust = 0.5, size = 12, face = "bold"))
 ```
 The above chart shows there is no significant increasing or decreasing trend of resale price over months.
-   
+:::  
 
 ## 5.7 Resale price by storey_range
 
