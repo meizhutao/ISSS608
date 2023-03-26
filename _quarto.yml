@@ -13,6 +13,8 @@ website:
             text: Take-home Exercise 2
           - href: Take-home Exercise/Take-home Exercise 3/Take-home Exercise 3.qmd
             text: Take-home Exercise 3
+          - href: Take-home Exercise/Take-home Exercise 4/Take-home Exercise 4.qmd
+            text: Take-home Exercise 4
       - text: In-class Exercise
         menu: 
           - href: In-class Exercise/In-class Ex3/In-class Ex3.qmd
@@ -23,7 +25,8 @@ website:
             text: In-class Ex5
           - href: In-class Exercise/In-class Ex7/In-class Ex7.qmd
             text: In-class Ex7
- 
+
+
     right: 
        - href: index.qmd
          text: Home

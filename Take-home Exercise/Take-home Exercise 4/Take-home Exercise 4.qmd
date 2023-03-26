@@ -1,0 +1,462 @@
+---
+title: "Take-home Exercise 4"
+editor: visual
+format: html
+code-fold: true
+code-summary: "Show the code"
+warning: false
+message: false
+Author: Tao meizhu
+---
+
+# 1.0 The Task
+In this take-home exercise, we are required to uncover the impact of COVID-19 as well as the global economic and political dynamic in 2022 on Singapore bi-lateral trade (i.e. Import, Export and Trade Balance) by using appropriate analytical visualisation techniques learned in Lesson 6: It’s About Time. Students are encouraged to apply appropriate interactive techniques to enhance user and data discovery experiences.
+
+
+# 2.0 The Data
+For the purpose of this take-home exercise, Merchandise Trade provided by Department of Statistics, Singapore (DOS) will be used. The data are available under the sub-section of Merchandise Trade by Region/Market. We should download the data by clicking on the link Download all in Excel on the same webpage. The study period should be between January 2020 to December 2022.
+
+# 3.0 The Designing Tool
+For the purpose of this take-home exercise, ggplot2 and its extension should be used to design the analytical visualisation. tidyverse family of packages should be used to prepare the data.
+
+## 3.1 Packages used
+Before we get started, it is important for us to install the necessary R packages into R and launch these R packages into R environment.
+
+The R packages needed for this exercise are as follows:
+```{r}
+pacman::p_load(plotly, ggplot2, timetk, scales, viridis, lubridate, ggthemes, gridExtra, readxl, knitr, data.table, CGPfunctions, ggHoriPlot, tidyverse,funModeling)
+```
+
+
+# 4.0 Data preparation
+
+## 4.1 Importing Data
+```{r}
+
+Import <- read_excel("data/outputFile.xlsx", sheet = "T1", skip = 9)
+Export <- read_excel("data/outputFile.xlsx", sheet = "T2", skip = 9)
+```
+
+## 4.2 Data wrangling
+select data from 2020 Jan to 2022 Dec.
+```{r}
+Import_1 <- Import %>%
+  select(1,3:38)%>%
+  filter(row_number()<92 & row_number()>1)
+```
+
+```{r}
+Export_1 <- Export %>%
+  select(1,3:38.)%>%
+  filter(row_number()<120 & row_number()>1)
+
+```
+
+Check if any missing values
+```{r}
+skimr::skim(Import_1)
+```
+
+```{r}
+skimr::skim(Export_1)
+```
+Separate the country and thousand/million
+```{r}
+Import_2 <- Import_1 %>%
+  separate(`Data Series`, c("country", "unit"),
+           sep = ' \\(T|\\(M') %>%
+  mutate(unit = str_remove(unit, '\\)'))
+```
+
+```{r}
+Export_2 <- Export_1 %>%
+  separate(`Data Series`, c("country", "unit"),
+           sep = ' \\(T|\\(M') %>%
+  mutate(unit = str_remove(unit, '\\)'))
+```
+
+ImportK is Import data by thousand/countries.
+```{r}
+ImportK <- Import_2 %>%
+  filter(str_detect(unit, "housand")) %>%
+  select(-(unit))
+```
+
+ImportM is Import data by million/regions.
+```{r}
+ImportM <- Import_2 %>%
+  filter(str_detect(unit, "illion")) %>%
+  select(-(unit))
+```
+
+ExportK is Export data by thousand/countries.
+```{r}
+ExportK<- Export_2 %>%
+  filter(str_detect(unit, "housand")) %>%
+  select(-(unit))
+```
+
+ExportM is Export data by million/regions.
+```{r}
+ExportM<- Export_2 %>%
+  filter(str_detect(unit, "illion")) %>%
+  select(-(unit))
+```
+
+Create pivot table to list down the date period in the same column. 
+```{r}
+ImportK_pvL <- ImportK %>%
+  pivot_longer(cols = !country,
+               names_to = "temporary",
+               values_to = "import") %>%
+  mutate(period = (lubridate::ym(temporary))) %>%
+  arrange(country, period)
+
+ImportK_pvL <- ImportK_pvL %>%
+  mutate(month = factor(month
+                        (ImportK_pvL$`period`),
+                        levels = 1:12, 
+                        labels = month.abb, 
+                        ordered = TRUE)) %>%
+  mutate(year = as.character(year(ymd(ImportK_pvL$`period`)))) %>%     
+  relocate(year, month) %>%
+  select(-temporary)%>%
+  arrange(desc(import))
+
+
+```
+
+Create pivot table to list down the date period in the same column. 
+```{r}
+ImportM_pvL <- ImportM %>%
+  pivot_longer(cols = !country,
+               names_to = "temporary",
+               values_to = "import") %>%
+  mutate(period = (lubridate::ym(temporary))) %>%
+  arrange(country, period)
+
+ImportM_pvL <- ImportM_pvL %>%
+  mutate(month = factor(month
+                        (ImportM_pvL$`period`),
+                        levels = 1:12, 
+                        labels = month.abb, 
+                        ordered = TRUE)) %>%
+  mutate(year = as.character(year(ymd(ImportM_pvL$`period`)))) %>%     
+  relocate(year, month) %>%
+  select(-temporary)%>%
+  arrange(desc(import))
+
+
+```
+
+Create pivot table to list down the date period in the same column. 
+```{r}
+ExportK_pvL <- ExportK %>%
+  pivot_longer(cols = !country,
+               names_to = "temporary",
+               values_to = "export") %>%
+  mutate(period = (lubridate::ym(temporary))) %>%
+  arrange(country, period)
+
+ExportK_pvL<- ExportK_pvL %>%
+  mutate(month = factor(month
+                        (ExportK_pvL$`period`),
+                        levels = 1:12, 
+                        labels = month.abb, 
+                        ordered = TRUE)) %>%
+  mutate(year = as.character(year(ymd(ExportK_pvL$`period`)))) %>%     
+  relocate(year, month) %>%
+  select(-temporary)%>%
+  arrange(desc(export))
+```
+
+Create pivot table to list down the date period in the same column. 
+```{r}
+ExportM_pvL <- ExportM %>%
+  pivot_longer(cols = !country,
+               names_to = "temporary",
+               values_to = "export") %>%
+  mutate(period = (lubridate::ym(temporary))) %>%
+  arrange(country, period)
+
+ExportM_pvL<- ExportM_pvL %>%
+  mutate(month = factor(month
+                        (ExportM_pvL$`period`),
+                        levels = 1:12, 
+                        labels = month.abb, 
+                        ordered = TRUE)) %>%
+  mutate(year = as.character(year(ymd(ExportM_pvL$`period`)))) %>%     
+  relocate(year, month) %>%
+  select(-temporary)%>%
+  arrange(desc(export))
+```
+
+Merge import and export by countries. 
+```{r}
+TradeK<- ImportK_pvL %>% 
+  full_join(ExportK_pvL)%>%
+  mutate(trade_total = import + export)%>% 
+  mutate(formatted_period = format(period, "%Y %B"))%>% 
+  mutate(trade_balance = export - import)
+```
+Merge import and export by regions. 
+```{r}
+TradeM<- ImportM_pvL %>% 
+  full_join(ExportM_pvL)%>%
+  mutate(trade_total = import + export)%>% 
+  mutate(formatted_period = format(period, "%Y %B"))%>% 
+  mutate(trade_balance = export - import)        
+```
+By countries: List "import" and "export" in the same column, name as "Type", select the column that we need for further analysis, and filter the total trade >10000 million per country.
+```{r}
+Trade_country<- TradeK %>% 
+  pivot_longer(cols = c("import","export"),
+               names_to = "Type",
+               values_to = "Amount") %>% 
+  na.omit("Amount")%>%
+  group_by(country)%>%
+  summarise(year,
+            month,
+            country,
+            trade_country = sum(trade_total/1000),
+            period,
+            formatted_period,
+            Type,
+  
+            Amount = round(Amount/1000)) %>%
+  arrange(desc(trade_country))%>%
+  filter(trade_country > 10000)
+```
+By regions: List "import" and "export" in the same column, name as "Type", select the column that we need for further analysis
+```{r}
+Trade_region<- TradeM %>% 
+  pivot_longer(cols = c("import","export"),
+               names_to = "Type",
+               values_to = "Amount") %>% 
+  na.omit("Amount")%>%
+  group_by(country)%>%
+  summarise(year,
+            month,
+            country,
+            trade_country = sum(trade_total),
+            period,
+            formatted_period,
+            Type,
+            Amount) %>%
+  arrange(desc(trade_country))
+  
+```
+
+
+Examine the final data set. 
+```{r}
+summary(Trade_country)
+glimpse(Trade_country)
+summary(Trade_region)
+glimpse(Trade_region)
+```
+
+# 5.0 Data Visualisation
+## 5.1 Plotting the cycle plot
+
+:::panel-tabset
+### By region
+```{r cp_region, fig.height = 20, fig.width = 20}
+cp_region <- ggplot(data = Trade_region, aes(x = period, y = Amount)) +
+  geom_line(aes(colour = Type)) +
+  labs(x = "Date", y = "Amount", title = "Imports & Exports by Region,  2022") +
+  facet_wrap(~ country) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+ggplotly(cp_region)
+```
+
+
+
+From the above chart, we can see that Asia shows most significant import and export trade relation with Singapore since year 2020 to 2022, followed by Europe, European union, Oceania. Asia shows increasing trend during the mentioned time frame whereas Europe, European union, Oceania show stable trade trend.
+Hence, we will focus on about 80% of top trade with Singapore which are Asia and Europe. 
+
+### By country
+```{r cp_country, fig.height = 20, fig.width = 20}
+cp_country <- ggplot(data = Trade_country, aes(x = period, y = Amount)) +
+  geom_line(aes(colour = Type )) +
+  labs(x = "Month", y = "Amount", title = "Imports & Exports by Region,  2022") +
+  facet_wrap(~ country) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+ggplotly(cp_country)
+```
+
+From the above chart, we can observe that, Hong Kong, Indonesia, Mainland China, Malaysia, Republic of Korean,Switzerland,Taiwan, Thailand, United Arab Emirates,United Kingdom, United States, Vietnam, Socialist Republic are the top 10 countries which has most significant trade relation with Singapore from 2020 to 2022. We will further analyze these countries.
+
+### By top 10 country
+```{r}
+Trade_top10<- Trade_country %>% 
+  filter(country %in% c("Mainland China", "Malaysia", "Republic of Korean", "Switzerland","Taiwan", "Thailand","United Arab Emirates","United Kingdom", "United States", "Vietnam, Socialist Republic Of" ))
+```
+
+```{r}
+cp_top10 <- ggplot(data = Trade_top10, aes(x = period, y = Amount)) +
+  geom_line(aes(colour = Type)) +
+  labs(x = "Month", y = "Amount", title = "Imports & Exports by Region,  2022") +
+  facet_wrap(~ country) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+ggplotly(cp_top10)
+```
+
+The above chart shows top 10 countries which have the most significant trade relation with Singapore. Mainland China, Malaysia, and Taiwan are the top 3 countries which showed increasing import and export trade.Whereas the Thailand, United Arab Emirates, United Kingdom, United States, Vietnam showed stable import and export trend.         
+:::
+
+## 5.2 Plotting the time series plot
+
+:::panel-tabset
+## By region
+
+```{r}
+ts_region <- TradeM%>%
+  group_by(country) %>%
+  plot_time_series(period, trade_balance,.color_var = year,  .facet_ncol = 2, .facet_scales = "free", .interactive = TRUE)
+ggplotly(ts_region)
+
+```
+The following is the time series plot for trade balance(import-export) by region. 
+
+
+## By top 10 countries
+```{r}
+ts_top10 <- TradeK%>%
+  group_by(country) %>%
+  filter(country %in% c("Mainland China", "Malaysia", "Republic of Korean", "Switzerland","Taiwan", "Thailand","United Arab Emirates","United Kingdom", "United States", "Vietnam, Socialist Republic Of" ))%>%
+  plot_time_series(period, trade_balance,.color_var = year,  .facet_ncol = 2, .facet_scales = "free", .interactive = TRUE)
+ggplotly(ts_top10)
+
+```
+The following is the time series plot for trade balance(import-export) by top10 countries.
+:::
+
+## 5.3 Plotting the slopegraph
+:::panel-tabset
+#### Imports by region
+```{r}
+Trade_region %>%
+  filter(Type == "import")%>%
+  group_by(country, year) %>%
+  summarise(Amount = sum(Amount)) %>%
+  mutate(year = factor(year)) %>%
+  filter(year %in% c(2020, 2021,2022)) %>%
+  newggslopegraph(year, Amount, country,
+                  Title = "Imports by Region",
+                  SubTitle = "2020 to 2022",
+                  Caption = "Source: Department of Statistics, Singapore")
+```
+The above chart shows Asia has increasing trend of imports from year 2020 to 2022.
+
+#### Exports by region
+```{r}
+Trade_region %>%
+  filter(Type == "export")%>%
+  group_by(country, year) %>%
+  summarise(Amount = sum(Amount)) %>%
+  mutate(year = factor(year)) %>%
+  filter(year %in% c(2020, 2021,2022)) %>%
+  newggslopegraph(year, Amount, country,
+                  Title = "Exports by Region",
+                  SubTitle = "2020 to 2022",
+                  Caption = "Source: Department of Statistics, Singapore")
+```
+The above chart shows Asia has increasing trend of exports from year 2020 to 2022.
+
+#### Imports by top 10 countries
+```{r}
+Trade_top10 %>%
+  filter(Type == "import")%>%
+  group_by(country, year) %>%
+  summarise(Amount = sum(Amount)) %>%
+  mutate(year = factor(year)) %>%
+  filter(year %in% c(2020, 2021,2022)) %>%
+  newggslopegraph(year, Amount, country,
+                  Title = "Imports by top10 countries",
+                  SubTitle = "2020 to 2022",
+                  Caption = "Source: Department of Statistics, Singapore")
+```
+The above chart shows the imports trend of top10 countries which have most trade relation with Singapore.
+
+#### Exports by top 10 countries
+```{r}
+Trade_top10 %>%
+  filter(Type == "export")%>%
+  group_by(country, year) %>%
+  summarise(Amount = sum(Amount)) %>%
+  mutate(year = factor(year)) %>%
+  filter(year %in% c(2020, 2021,2022)) %>%
+  newggslopegraph(year, Amount, country,
+                  Title = "Exports by top10 countries",
+                  SubTitle = "2020 to 2022",
+                  Caption = "Source: Department of Statistics, Singapore")
+```
+The above chart shows the exports trend of top10 countries which have most trade relation with Singapore.
+:::
+
+## 5.4 Plotting Horizon Plot
+:::panel-tabset
+## Trade balance by region
+```{r}
+
+TradeM %>% 
+ 
+  filter(period >= "2020-01-01") %>%
+  ggplot() +
+  geom_horizon(aes(x = period, y=trade_balance), 
+               origin = "midpoint", 
+               horizonscale = 6)+
+  facet_grid(`country`~.) +
+    theme_few() +
+  scale_fill_hcl(palette = 'RdBu') +
+  theme(panel.spacing.y=unit(0, "lines"), strip.text.y = element_text(
+    size = 5, angle = 0, hjust = 0),
+    legend.position = 'none',
+    axis.text.y = element_blank(),
+    axis.text.x = element_text(size=7),
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.border = element_blank()
+    ) +
+    scale_x_date(expand=c(0,0), date_breaks = "3 month", date_labels = "%b%y") +
+  ggtitle('Trade blance by region (Jan 2020 to Dec 2022)')
+```
+The chart shows there is large trade balance in Asia. The darker area, the larger balance.
+
+## Trade balance by top 10 countries
+```{r}
+
+TradeK %>% 
+  filter(country %in% c("Mainland China", "Malaysia", "Republic of Korean", "Switzerland","Taiwan", "Thailand","United Arab Emirates","United Kingdom", "United States", "Vietnam, Socialist Republic Of" ))%>%
+  filter(period >= "2020-01-01") %>%
+  ggplot() +
+  geom_horizon(aes(x = period, y=trade_balance), 
+               origin = "midpoint", 
+               horizonscale = 6)+
+  facet_grid(`country`~.) +
+    theme_few() +
+  scale_fill_hcl(palette = 'RdBu') +
+  theme(panel.spacing.y=unit(0, "lines"), strip.text.y = element_text(
+    size = 5, angle = 0, hjust = 0),
+    legend.position = 'none',
+    axis.text.y = element_blank(),
+    axis.text.x = element_text(size=7),
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.border = element_blank()
+    ) +
+    scale_x_date(expand=c(0,0), date_breaks = "3 month", date_labels = "%b%y") +
+  ggtitle('Top 10 countries Trade blance (Jan 2020 to Dec 2022)')
+```
+
+The chart shows there is large trade balance in Mainland China, Malaysia and Taiwan. The darker area, the larger balance.
+:::
